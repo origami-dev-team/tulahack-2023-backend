@@ -29,7 +29,11 @@ jobs:
           json: ${{ secrets.FIREBASE_SECRETS_JSON }}
           
       - name: Build docker images
-        run: docker-compose -f docker-compose.yaml build
+        uses: isbang/compose-action@v1.5.1
+        with:
+          compose-file: "docker-compose.yaml"
+        env:
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
 
       - name: Login to Dockerhub
         uses: docker/login-action@v2

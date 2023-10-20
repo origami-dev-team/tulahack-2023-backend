@@ -6,6 +6,8 @@ services:
     image: $DOCKER_IMAGE_API
     container_name: api
     restart: always
+    environment:
+      BUCKET_NAME: $BUCKET_NAME
     networks:
       - more-tech
 
