@@ -1,3 +1,4 @@
+import firebase_admin
 from fastapi import HTTPException
 from firebase_admin import firestore_async
 from firebase_admin import storage
@@ -5,15 +6,12 @@ from google.cloud.firestore_v1.async_document import AsyncDocumentReference
 from google.cloud.firestore_v1.async_collection import AsyncCollectionReference
 from typing import List
 from utils.types import DICT
-import firebase_admin
-import os
+from constants import BUCKET_NAME
 from typing import BinaryIO
 
 # Main rules of this Firestore wrapper:
 #   * This one receives ONLY dicts
 #   * This one returns ONLY dicts
-
-BUCKET_NAME = os.getenv("BUCKET_NAME")
 
 class Firestore:
     def __new__(cls):
