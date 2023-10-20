@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from firebase_admin import firestore_async
+from firebase_admin import storage
 from google.cloud.firestore_v1.async_document import AsyncDocumentReference
 from google.cloud.firestore_v1.async_collection import AsyncCollectionReference
 from typing import List
@@ -15,8 +16,11 @@ class Firestore:
     def __new__(cls):
         if not hasattr(cls, "instance"):
             cred = firebase_admin.credentials.Certificate("secrets/firebase.json")
-            firebase_admin.initialize_app(cred)
+            app = firebase_admin.initialize_app(cred, {
+                "storageBucket": "gs://sandbox-98197.appspot.com"
+            })
             cls.firestore = firestore_async.client()  # type: ignore
+            cls.bucket = storage.bucket(app=app)
             cls.instance = super(Firestore, cls).__new__(cls)
         return cls.instance
 

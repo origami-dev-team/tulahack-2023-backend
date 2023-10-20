@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi import FastAPI
-from todo.router import router as todo_router
+from sprite.router import router as sprite_router
+from constants import Collection
 
 app = FastAPI()
 
-app.include_router(todo_router, prefix="/todo")
+app.include_router(sprite_router, prefix=f"/{Collection.Sprite}")
