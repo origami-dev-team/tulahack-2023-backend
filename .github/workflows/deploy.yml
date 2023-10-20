@@ -7,8 +7,8 @@ on:
 
 env:
   DOCKER_REMOTE_CONTEXT: production
-  DOCKER_IMAGE_API: tcaty/more-tech-api
-  DOCKER_IMAGE_NGINX: tcaty/more-tech-nginx
+  DOCKER_IMAGE_API: tcaty/tulahack-2023-api
+  DOCKER_IMAGE_NGINX: tcaty/tulahack-2023-nginx
 
 jobs:
   deploy:
