@@ -6,21 +6,24 @@ from google.cloud.firestore_v1.async_collection import AsyncCollectionReference
 from typing import List
 from utils.types import DICT
 import firebase_admin
+import os
+from typing import BinaryIO
 
 # Main rules of this Firestore wrapper:
 #   * This one receives ONLY dicts
 #   * This one returns ONLY dicts
 
+BUCKET_NAME = os.getenv("BUCKET_NAME")
 
 class Firestore:
     def __new__(cls):
         if not hasattr(cls, "instance"):
             cred = firebase_admin.credentials.Certificate("secrets/firebase.json")
             app = firebase_admin.initialize_app(cred, {
-                "storageBucket": "gs://sandbox-98197.appspot.com"
+                "storageBucket": f"gs://{BUCKET_NAME}"
             })
             cls.firestore = firestore_async.client()  # type: ignore
-            cls.bucket = storage.bucket(app=app)
+            cls.bucket = storage.bucket(app=app, name=BUCKET_NAME)
             cls.instance = super(Firestore, cls).__new__(cls)
         return cls.instance
 
@@ -64,6 +67,11 @@ class Firestore:
         if len(deleted) >= batch_size:
             return self.delete_all(collection, batch_size)
         return deleted
+        
+    async def upload_file(self, file: BinaryIO, folder: str, id: str) -> str:
+        blob  = firestore.bucket.blob(f"{folder}/{id}")
+        blob.upload_from_file(file)
+        return blob.public_url
 
     async def __get_doc_safely(self, ref: AsyncDocumentReference) -> DICT:
         doc = await ref.get()
