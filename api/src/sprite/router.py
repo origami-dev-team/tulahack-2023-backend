@@ -19,7 +19,7 @@ async def get_all(category: SpriteCategory) -> List[str]:
 @router.post("/{category}")
 async def upload(category: SpriteCategory, file: UploadFile) -> Sprite:
     file_id = id()
-    url = await firestore.upload_file(file=file.file, folder=category, id=file_id)
+    url = await firestore.upload_file(file=file, folder=category, id=file_id)
     sprite = Sprite(id=file_id, category=category, url=url)
     sprite = await firestore.create(collection=Collection.Sprite, data=sprite.model_dump())
     return Sprite(**sprite)

@@ -1,5 +1,5 @@
 import firebase_admin
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from firebase_admin import firestore_async
 from firebase_admin import storage
 from google.cloud.firestore_v1.async_document import AsyncDocumentReference
@@ -7,7 +7,7 @@ from google.cloud.firestore_v1.async_collection import AsyncCollectionReference
 from typing import List
 from utils.types import DICT
 from constants import BUCKET_NAME
-from typing import BinaryIO
+from utils import parse_filename
 
 # Main rules of this Firestore wrapper:
 #   * This one receives ONLY dicts
@@ -66,9 +66,10 @@ class Firestore:
             return self.delete_all(collection, batch_size)
         return deleted
         
-    async def upload_file(self, file: BinaryIO, folder: str, id: str) -> str:
-        blob  = firestore.bucket.blob(f"{folder}/{id}")
-        blob.upload_from_file(file)
+    async def upload_file(self, file: UploadFile, folder: str, id: str) -> str:
+        name, ext = parse_filename(str(file.filename))
+        blob  = firestore.bucket.blob(f"{folder}/{name}-{id}.{ext}")
+        blob.upload_from_file(file.file)
         return blob.public_url
 
     async def __get_doc_safely(self, ref: AsyncDocumentReference) -> DICT:
