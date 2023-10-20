@@ -1,0 +1,95 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  DOCKER_REMOTE_CONTEXT: production
+  DOCKER_IMAGE_API: tcaty/more-tech-api
+  DOCKER_IMAGE_NGINX: tcaty/more-tech-nginx
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+          
+      - name: Create secrets dir
+        run: mkdir api/secrets
+          
+      - name: Create 
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          dir: "api/secrets"
+          name: "firebase.json"
+          json: ${{ secrets.FIREBASE_SECRETS_JSON }}
+          
+      - name: Build docker images
+        run: docker-compose -f docker-compose.yaml build
+
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Push images to Dockerhub
+        run: |
+          docker push ${{ env.DOCKER_IMAGE_API }}
+          docker push ${{ env.DOCKER_IMAGE_NGINX }}
+
+      - name: Create remote docker context
+        uses: arwynfr/actions-docker-context@v2
+        with:
+          docker_host: ssh://${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+          context_name: ${{ env.DOCKER_REMOTE_CONTEXT }}
+          ssh_cert: ${{ secrets.SSH_CERT }}
+          ssh_key: ${{ secrets.SSH_KEY }}
+
+      - name: Use remote docker context
+        run: docker context use ${{ env.DOCKER_REMOTE_CONTEXT }}      
+
+      - name: Pull new images on remote
+        run: |
+          docker pull ${{ env.DOCKER_IMAGE_API }}
+          docker pull ${{ env.DOCKER_IMAGE_NGINX }}
+            
+      - name: Down containers on remote
+        run: docker-compose --context ${{ env.DOCKER_REMOTE_CONTEXT }} down
+          
+      - name: Up new containers on remote
+        run: docker-compose --context ${{ env.DOCKER_REMOTE_CONTEXT }} up -d --force-recreate
+          
+  notify_on_success:
+    runs-on: ubuntu-latest
+    if: ${{ success() }}
+    needs: 
+      - deploy
+    steps:
+      - name: Discord Webhook Action
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.WEBHOOK_URL }}
+          embed-description: "Deploy succeeded ✅"
+          embed-author-name: "Steve DevOps"
+          embed-author-icon-url: "https://picsoncanvas.co.uk/wp-content/uploads/2015/05/Minecraft-Steve-Face-3D.jpg"
+          embed-image-url: "https://i.ytimg.com/vi/gzSAuy_hS_s/maxresdefault.jpg"
+            
+  notify_on_failure:
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    needs: 
+      - deploy
+    steps:
+      - name: Discord Webhook Action
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.WEBHOOK_URL }}
+          embed-description: "Deploy failed ❌"
+          embed-author-name: "Steve DevOps"
+          embed-author-icon-url: "https://picsoncanvas.co.uk/wp-content/uploads/2015/05/Minecraft-Steve-Face-3D.jpg"
+          embed-image-url: "https://i.ytimg.com/vi/Nee4VxRk4cA/maxresdefault.jpg"
