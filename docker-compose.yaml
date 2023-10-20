@@ -3,7 +3,7 @@ version: '3'
 services:
   api:
     build: ./api
-    image: tcaty/more-tech-api
+    image: $DOCKER_IMAGE_API
     container_name: api
     restart: always
     networks:
@@ -11,7 +11,7 @@ services:
 
   nginx:
     build: ./nginx
-    image: tcaty/more-tech-nginx
+    image: $DOCKER_IMAGE_NGINX
     container_name: nginx
     ports:
       - "80:80"
