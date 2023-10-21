@@ -9,3 +9,6 @@ class Sprite(BaseModel):
     category: SpriteCategory
     url: str
     created_at: datetime = Field(default_factory=now)
+    
+class GenerateSpriteDTO(BaseModel):
+    prompt: str

@@ -6,6 +6,9 @@ services:
     image: $DOCKER_IMAGE_API
     container_name: api
     restart: always
+    environment:
+      TUNNEL_HOST: "host.docker.internal"
+      TUNNEL_PORT: "3000"
     networks:
       - more-tech
 
