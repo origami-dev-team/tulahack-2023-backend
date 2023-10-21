@@ -7,12 +7,10 @@ services:
     container_name: api
     restart: always
     environment:
-      TUNNEL_HOST: "host.docker.internal"
+      TUNNEL_HOST: "31.129.109.90"
       TUNNEL_PORT: "3000"
     networks:
       - more-tech
-    extra_hosts:
-    - "host.docker.internal:host-gateway"
 
   nginx:
     build: ./nginx
